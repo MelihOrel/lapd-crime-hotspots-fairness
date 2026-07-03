@@ -223,7 +223,7 @@ Runtime: a few minutes end-to-end on a laptop (the SHAP step is the slowest).
 ## License
 
 MIT. The dataset is published by the City of Los Angeles; review its terms before redistribution.
-
+Data: https://www.kaggle.com/datasets/kushsheth/los-angeles-police-department-lapd-crime-data
 ## Disclaimer
 
 This is a portfolio / educational project on an administrative dataset that reflects reporting and enforcement patterns, not ground-truth crime. Nothing here should be used to make operational policing decisions about any person or place.

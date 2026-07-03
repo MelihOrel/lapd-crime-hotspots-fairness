@@ -1,0 +1,72 @@
+# ============================================================================
+# config.yaml — LAPD Crime: Spatiotemporal Hotspot Analysis & Fairness Audit
+# Single source of truth for paths, the clearance mapping, and analysis params.
+# ============================================================================
+
+paths:
+  raw_csv:        "data/raw/Crime_Data_from_2020_to_Present.csv"
+  clean_parquet:  "data/processed/crime_clean.parquet"
+  figures:        "reports/figures"
+  maps:           "reports/maps"
+  metrics:        "reports/metrics"
+
+# ----------------------------------------------------------------------------
+# Clearance target definition (Part 2).
+# "Cleared / solved" is defined ONLY as an arrest status. "Adult Other" and
+# "Juv Other" are administrative dispositions (e.g. diversion, referral) that
+# are NOT arrests and are therefore treated as NOT cleared. This is a modelling
+# choice and is documented in the README.
+# ----------------------------------------------------------------------------
+clearance:
+  cleared_statuses:
+    - "Adult Arrest"
+    - "Juv Arrest"
+  # Everything else (Invest Cont, Adult Other, Juv Other, UNK) -> not cleared.
+
+# ----------------------------------------------------------------------------
+# Data-cleaning parameters.
+# ----------------------------------------------------------------------------
+cleaning:
+  age_min: 0          # victim ages strictly < age_min are invalid -> null
+  age_max: 100        # victim ages strictly > age_max are invalid -> null
+  # Los Angeles bounding box used to reject out-of-region coordinates after the
+  # exact-(0,0) phantom exclusion. Anything outside this box is also nulled-out
+  # for geospatial steps.
+  la_bbox:
+    lat_min: 33.5
+    lat_max: 34.5
+    lon_min: -119.0
+    lon_max: -117.5
+  unknown_token: "Unknown"   # explicit category for missing sensitive fields
+
+# ----------------------------------------------------------------------------
+# Hotspot analysis parameters (Part 3).
+# ----------------------------------------------------------------------------
+hotspots:
+  grid_decimals: 2        # round lat/lon to N decimals -> ~1.1km grid cells
+  gi_threshold: 0.02      # DistanceBand threshold in decimal degrees (~2.2km)
+  gi_permutations: 99     # conditional-randomisation permutations for p-values
+  significance: 0.05      # alpha for Gi* hot/cold spot significance
+
+# ----------------------------------------------------------------------------
+# Fairness audit parameters (Part 5).
+# ----------------------------------------------------------------------------
+fairness:
+  test_size: 0.25
+  random_state: 42
+  # Operational features ONLY. Victim demographics are DELIBERATELY EXCLUDED
+  # from model inputs — they are used only as audited sensitive groups.
+  model_features_cat:
+    - "Area"
+    - "Crime_Code"
+    - "Premis"
+  model_features_num:
+    - "hour"
+    - "weapon_present"
+  max_ohe_categories: 50
+  shap_sample: 3000          # rows used for SHAP global importance
+  audited_groups:            # sensitive attributes audited (NOT model inputs)
+    - "Victim_descent"
+    - "Victim_sex"
+    - "age_band"
+  min_group_size: 500        # suppress groups smaller than this in audit tables
